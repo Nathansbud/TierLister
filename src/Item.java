@@ -13,7 +13,9 @@ public class Item {
     private float width;
     private float height;
 
+    private static Item chosen = null;
     private boolean selected = false;
+    private Tier tier = null;
 
     Item(String _name, String _path, float[] _coords) {
         name = _name;
@@ -34,15 +36,42 @@ public class Item {
     }
 
     public void draw() {
+        gui.strokeWeight(2);
+
+        if(isChosen()) {
+            gui.stroke(255, 255, 1); //1 so intellij stops yelling at me :((( should be 0 tho
+        } else if(isTouched()) {
+            gui.stroke(255, 0, 0);
+        } else {
+            gui.stroke(0);
+        }
+
+        gui.noFill();
         if(hasImg()) {
             gui.image(img, x, y, width, height);
+            gui.rect(x, y, width, height);
         } else {
             gui.rect(x, y, width, height);
         }
+        gui.strokeWeight(1);
     }
 
     public boolean isTouched() {
         return gui.mouseX <= x+width && gui.mouseX >= x && gui.mouseY >= y && gui.mouseY <= y+height;
+    }
+
+    public boolean isChosen() {
+        return chosen != null && chosen.equals(this);
+    }
+    public static Item getChosen() {
+        return chosen;
+    }
+    public void makeChosen() {
+        if(isChosen()) {
+            chosen = null;
+        } else {
+            chosen = this;
+        }
     }
 
     public boolean isSelected() {
@@ -50,6 +79,16 @@ public class Item {
     }
     public void setSelected(boolean _selected) {
         selected = _selected;
+    }
+
+    public Tier getTier() {
+        return tier;
+    }
+    public void setTier(Tier _tier) {
+        tier = _tier;
+    }
+    public boolean hasTier() {
+        return tier != null;
     }
 
     public String getName() {

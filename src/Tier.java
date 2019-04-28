@@ -14,6 +14,10 @@ public class Tier {
     private float width;
     private float height;
 
+    private float boxX;
+
+    private static Tier chosen = null;
+
     public Tier(String _name, float[] _coords) {
         name = _name;
 
@@ -21,7 +25,6 @@ public class Tier {
         y = _coords[1];
         width = _coords[2];
         height = _coords[3];
-
     }
 
     public Tier(String _name) {
@@ -29,18 +32,22 @@ public class Tier {
     }
 
     public void draw() {
+        gui.strokeWeight(2);
+
+        if(isChosen()) {
+            gui.stroke(255, 255, 0);
+        } else if(isTouched()) {
+            gui.stroke(255, 0, 0);
+        } else {
+            gui.stroke(0);
+        }
         gui.fill(50);
         gui.rect(x, y, width, height);
         gui.fill(0, 255, 255);
         gui.rect(x, y, width/10.0f, height);
         gui.fill(255, 0, 0);
         gui.text(name, x + 0.5f*width/10.0f - 0.5f*gui.textWidth(name), y+0.5f*height);
-
-        for(Item i : items) {
-            i.draw();
-        }
     }
-
 
     public String getName() {
         return name;
@@ -64,11 +71,39 @@ public class Tier {
     }
 
     public void addItem(Item item) {
-        item.setPosition(x+width/10.0f*items.size(), y); //TD: Need to handle overflow from tier
         items.add(item);
+        item.setPosition(x+width/10.0f*items.size(), y); //TD: Need to handle overflow from tier
+        item.setTier(this);
     }
-    public void removeItem(int index) {
-        items.remove(index);
+    public void removeItem(Item item) {
+        item.setTier(null);
+        items.remove(item);
+        updateItems();
+    }
+
+    public void updateItems() {
+        for(int i = 0; i < items.size(); i++) {
+            items.get(i).setPosition(x + width/10.0f*(i+1), y);
+        }
+    }
+
+
+    public boolean isTouched() {
+        return gui.mouseX <= x + boxX && gui.mouseX >= x && gui.mouseY >= y && gui.mouseY <= y + height;
+    }
+
+    public static Tier getChosen() {
+        return chosen;
+    }
+    public boolean isChosen() {
+        return chosen != null && chosen.equals(this);
+    }
+    public void makeChosen() {
+        if(isChosen()) {
+            chosen = null;
+        } else {
+            chosen = this;
+        }
     }
 
     public float[] getCoordinates() {
@@ -79,6 +114,8 @@ public class Tier {
         y = _y;
         width = _width;
         height = _height;
+
+        boxX = width/10.0f;
     }
 
     public float[] getPosition() {
