@@ -1,9 +1,14 @@
 import processing.core.PApplet;
 import java.util.ArrayList;
-import java.util.Arrays;
-
 
 public class Tier {
+    public enum DrawDirection {
+        UP(),
+        DOWN(),
+        LEFT(),
+        RIGHT()
+    }
+
     static private PApplet gui;
 
     private ArrayList<Item> items = new ArrayList<Item>();
@@ -15,12 +20,19 @@ public class Tier {
     private float height;
 
     private float boxX;
+    private float boxY;
+    private float boxWidth;
+    private float boxHeight;
 
     private static Tier chosen = null;
 
+    private boolean drawBound = true; //"Tier" area; clicking this area does not count as clicking tier
+    private boolean drawBox = true; //"Header" area; clicking this area does count as clicking tier
+
+    private DrawDirection drawDirection;
+
     public Tier(String _name, float[] _coords) {
         name = _name;
-
         x = _coords[0];
         y = _coords[1];
         width = _coords[2];
@@ -29,24 +41,44 @@ public class Tier {
 
     public Tier(String _name) {
         name = _name;
+        drawDirection = DrawDirection.RIGHT;
+    }
+
+    public Tier(String _name, DrawDirection _drawDirection) {
+        name = _name;
+        drawDirection = _drawDirection;
+    }
+
+    public Tier(String _name, DrawDirection _drawDirection, boolean _drawBound, boolean _drawBox) {
+        name = _name;
+        drawDirection = _drawDirection;
+        drawBound = _drawBound;
+        drawBox = _drawBox;
     }
 
     public void draw() {
         gui.strokeWeight(2);
 
-        if(isChosen()) {
+        if (isChosen()) {
             gui.stroke(255, 255, 0);
         } else if(isTouched()) {
             gui.stroke(255, 0, 0);
         } else {
-            gui.stroke(0);
+            gui.noStroke();
         }
-        gui.fill(50);
-        gui.rect(x, y, width, height);
-        gui.fill(0, 255, 255);
-        gui.rect(x, y, width/10.0f, height);
+
+        if(drawBound) {
+            gui.fill(50);
+            gui.rect(x, y, width, height);
+        }
+
+        if(drawBox) {
+            gui.fill(0, 255, 255);
+            gui.rect(boxX, boxY, boxWidth, boxHeight);
+        }
+
         gui.fill(255, 0, 0);
-        gui.text(name, x + 0.5f*width/10.0f - 0.5f*gui.textWidth(name), y+0.5f*height);
+        gui.text(name, boxX + 0.5f*boxWidth - 0.5f*gui.textWidth(name), boxY+0.5f*boxHeight);
     }
 
     public String getName() {
@@ -72,7 +104,14 @@ public class Tier {
 
     public void addItem(Item item) {
         items.add(item);
-        item.setPosition(x+width/10.0f*items.size(), y); //TD: Need to handle overflow from tier
+        switch(drawDirection) {
+            case RIGHT:
+                item.setPosition(x+width/10.0f+(gui.width/19.2f*(items.size()-1)), y); //TD: Need to handle overflow from tier
+                break;
+            case DOWN:
+                item.setPosition(x + gui.width/14.4f*((items.size()-1)%2), boxY+boxHeight+gui.width/14.4f*(((items.size()-1)/2)));
+                break;
+        }
         item.setTier(this);
     }
     public void removeItem(Item item) {
@@ -83,13 +122,26 @@ public class Tier {
 
     public void updateItems() {
         for(int i = 0; i < items.size(); i++) {
-            items.get(i).setPosition(x + width/10.0f*(i+1), y);
+            switch(drawDirection) {
+                case RIGHT:
+                    items.get(i).setPosition(x + width/10.0f+gui.width/19.2f*(i), y);
+                    break;
+                case DOWN:
+                    items.get(i).setPosition(x + gui.width/14.4f*((i)%2), boxY+boxHeight+gui.width/14.4f*(i/2));
+                    break;
+            }
         }
     }
 
+    public DrawDirection getDrawDirection() {
+        return drawDirection;
+    }
+    public void setDrawDirection(DrawDirection _drawDirection) {
+        drawDirection = _drawDirection;
+    }
 
     public boolean isTouched() {
-        return gui.mouseX <= x + boxX && gui.mouseX >= x && gui.mouseY >= y && gui.mouseY <= y + height;
+        return gui.mouseX <= boxX + boxWidth && gui.mouseX >= boxX && gui.mouseY >= boxY && gui.mouseY <= boxY + boxHeight;
     }
 
     public static Tier getChosen() {
@@ -106,6 +158,32 @@ public class Tier {
         }
     }
 
+    public void setDefaultBoxCoordinates() {
+        switch(drawDirection) {
+            case RIGHT:
+                boxX = x;
+                boxY = y;
+                boxWidth = width / 10;
+                boxHeight = height;
+                break;
+            case DOWN:
+                boxX = x;
+                boxY = y;
+                boxWidth = width;
+                boxHeight = height/10;
+                break;
+            default:
+                break;
+        }
+    }
+
+    public boolean hasBox() {
+        return drawBox;
+    }
+    public void showBox(boolean _drawBox) {
+        drawBox = _drawBox;
+    }
+
     public float[] getCoordinates() {
         return new float[]{x, y, width, height};
     }
@@ -114,8 +192,7 @@ public class Tier {
         y = _y;
         width = _width;
         height = _height;
-
-        boxX = width/10.0f;
+        setDefaultBoxCoordinates();
     }
 
     public float[] getPosition() {
@@ -161,6 +238,62 @@ public class Tier {
     public void setHeight(float _height) {
         height = _height;
     }
+
+    public float[] getBoxCoordinates() {
+        return new float[]{boxX, boxY, boxWidth, boxHeight};
+    }
+    public void setBoxCoordinates(float _boxX, float _boxY, float _boxWidth, float _boxHeight) {
+        boxX = _boxX;
+        boxY = _boxY;
+        boxWidth = _boxWidth;
+        boxHeight = boxHeight;
+    }
+
+    public float[] getBoxPosition() {
+        return new float[]{x, y};
+    }
+    public void setBoxPosition(float _x, float _y) {
+        x = _x;
+        y = _y;
+    }
+
+    public float[] getBoxDimensions() {
+        return new float[]{boxWidth, boxHeight};
+    }
+    public void setBoxDimensions(float _boxWidth, float _boxHeight) {
+        boxWidth = _boxWidth;
+        boxHeight = _boxHeight;
+    }
+
+    public float getBoxX() {
+        return boxX;
+    }
+    public void setBoxX(float _boxX) {
+        boxX = _boxX;
+    }
+
+    public float getBoxY() {
+        return boxY;
+    }
+    public void setBoxY(float _boxY) {
+        boxY = _boxY;
+    }
+
+    public float getBoxWidth() {
+        return boxWidth;
+    }
+    public void setBoxWidth(float _boxWidth) {
+        boxWidth = _boxWidth;
+    }
+
+    public float getBoxHeight() {
+        return boxHeight;
+    }
+    public void setBoxHeight(float _boxHeight) {
+        boxHeight = _boxHeight;
+    }
+
+
 
     public static void setGui(PApplet _gui) {
         gui = _gui;

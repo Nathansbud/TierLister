@@ -1,8 +1,6 @@
 import processing.core.PApplet;
 import processing.core.PImage;
 
-import java.util.Arrays;
-
 public class Item {
     static private PApplet gui;
     private String name;
@@ -14,16 +12,19 @@ public class Item {
     private float height;
 
     private static Item chosen = null;
-    private boolean selected = false;
     private Tier tier = null;
 
     Item(String _name, String _path, float[] _coords) {
         name = _name;
-        x = _coords[0];
-        y = _coords[1];
-        width = _coords[2];
-        height = _coords[3];
-
+        if(_coords.length == 4) {
+            x = _coords[0];
+            y = _coords[1];
+            width = _coords[2];
+            height = _coords[3];
+        } else {
+            width = _coords[0];
+            height = _coords[1];
+        }
         img = gui.loadImage(_path);
     }
 
@@ -43,9 +44,8 @@ public class Item {
         } else if(isTouched()) {
             gui.stroke(255, 0, 0);
         } else {
-            gui.stroke(0);
+            gui.noStroke();
         }
-
         gui.noFill();
         if(hasImg()) {
             gui.image(img, x, y, width, height);
@@ -54,6 +54,21 @@ public class Item {
             gui.rect(x, y, width, height);
         }
         gui.strokeWeight(1);
+    }
+
+    public void drawTooltip() {
+        gui.strokeWeight(2);
+        if(isChosen()) {
+            gui.stroke(255, 255, 0);
+        } else {
+            gui.stroke(255, 0, 0);
+        }
+        gui.line(x+width, y, x+1.25f*width, y-0.25f*height);
+        gui.fill(255);
+        gui.rect(x+1.25f*width, y-0.5f*height,1.25f*width, 0.25f*height);
+        gui.textSize(12);
+        gui.fill(0);
+        gui.text(name, x + 1.25f*width + 0.5f*1.25f*width - 0.5f*gui.textWidth(name), y-0.5f*height+gui.textAscent());
     }
 
     public boolean isTouched() {
@@ -72,13 +87,6 @@ public class Item {
         } else {
             chosen = this;
         }
-    }
-
-    public boolean isSelected() {
-        return selected;
-    }
-    public void setSelected(boolean _selected) {
-        selected = _selected;
     }
 
     public Tier getTier() {
