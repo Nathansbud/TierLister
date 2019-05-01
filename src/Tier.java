@@ -109,7 +109,7 @@ public class Tier {
                 item.setPosition(x+width/10.0f+(gui.width/19.2f*(items.size()-1)), y); //TD: Need to handle overflow from tier
                 break;
             case DOWN:
-                item.setPosition(x + gui.width/14.4f*((items.size()-1)%2), boxY+boxHeight+gui.width/14.4f*(((items.size()-1)/2)));
+                item.setPosition(x + gui.width/14.4f*((items.size()-1)%3), boxY+boxHeight+gui.width/14.4f*(((items.size()-1)/3)));
                 break;
         }
         item.setTier(this);
@@ -127,7 +127,7 @@ public class Tier {
                     items.get(i).setPosition(x + width/10.0f+gui.width/19.2f*(i), y);
                     break;
                 case DOWN:
-                    items.get(i).setPosition(x + gui.width/14.4f*((i)%2), boxY+boxHeight+gui.width/14.4f*(i/2));
+                    items.get(i).setPosition(x + gui.width/14.4f*((i)%3), boxY+boxHeight+gui.width/14.4f*(i/3));
                     break;
             }
         }
@@ -144,11 +144,14 @@ public class Tier {
         return gui.mouseX <= boxX + boxWidth && gui.mouseX >= boxX && gui.mouseY >= boxY && gui.mouseY <= boxY + boxHeight;
     }
 
+    public boolean isChosen() {
+        return chosen != null && chosen.equals(this);
+    }
     public static Tier getChosen() {
         return chosen;
     }
-    public boolean isChosen() {
-        return chosen != null && chosen.equals(this);
+    public static void setChosen(Tier tier) {
+        chosen = tier;
     }
     public void makeChosen() {
         if(isChosen()) {

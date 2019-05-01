@@ -41,7 +41,7 @@ public class TierLister extends PApplet {
             tl[i].setCoordinates(0, height/11.5f*(i+1), width/1.5f, height/12.0f);
         }
 
-        tl[tl.length - 1].setCoordinates(width - width/7.2f, 0, width/7.2f, height);
+        tl[tl.length - 1].setCoordinates(width - width/4.8f, 0, width/4.8f, height);
 
         for(int i = 0, n = 0; i < files.size(); i++) {
             if(i % 2 == 0) {
@@ -89,8 +89,24 @@ public class TierLister extends PApplet {
 
     @Override
     public void keyTyped(KeyEvent event) {
-        if(event.getKey() == 's') {
-            app.saveFrame("output" + File.separator + title.toLowerCase().replaceAll(" ", "-") + ".jpg");
+        switch(event.getKey()) {
+            case 's':
+            case 'S':
+                app.saveFrame("output" + File.separator + title.toLowerCase().replaceAll(" ", "-") + ".png");
+                break;
+            case 'i':
+            case 'I':
+                Item.setChosen(null);
+                break;
+            case 't':
+            case 'T':
+                Tier.setChosen(null);
+                break;
+            case 'd':
+            case 'D':
+                Item.setChosen(null);
+                Tier.setChosen(null);
+                break;
         }
     }
 

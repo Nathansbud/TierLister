@@ -81,6 +81,9 @@ public class Item {
     public static Item getChosen() {
         return chosen;
     }
+    public static void setChosen(Item item) {
+        chosen = item;
+    }
     public void makeChosen() {
         if(isChosen()) {
             chosen = null;
