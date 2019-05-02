@@ -1,12 +1,16 @@
 import processing.core.PApplet;
 import processing.event.KeyEvent;
 
+import java.awt.FileDialog;
+import java.awt.Frame;
+
 import java.io.File;
 import java.util.ArrayList;
 
 public class TierLister extends PApplet {
     private static TierLister app = new TierLister();
     private static String title = "Fruit Tier List";
+//    private static boolean canShuffle = true;
 
     private static Tier[] tl = {
             new Tier("SS"),
@@ -51,7 +55,10 @@ public class TierLister extends PApplet {
             items.add(new Item(cleanName(files.get(i).getName()), files.get(i).getPath(), new float[]{width/19.2f, width/19.2f}));//, new float[]{width - width/14.4f*(2*((i+1)%2) + (i)%2), height/9.0f*(n), width/19.2f, width/19.2f}));
             tl[tl.length - 1].addItem(items.get(i));
         }
+
     }
+
+
 
     @Override
     public void draw() {
@@ -74,17 +81,6 @@ public class TierLister extends PApplet {
                 i.drawTooltip();
             }
         } //stop being layered over, this could prob be done more elegantly with a static touched method
-
-        if(Item.getChosen() != null && Tier.getChosen() != null) {
-            if(Item.getChosen().hasTier()) {
-                if(Item.getChosen().getTier() != Tier.getChosen()) {
-                    Tier prev = Item.getChosen().getTier();
-                    prev.removeItem(Item.getChosen());
-                }
-            } else {
-                Tier.getChosen().addItem(Item.getChosen());
-            }
-        }
     }
 
     @Override
@@ -107,6 +103,17 @@ public class TierLister extends PApplet {
                 Item.setChosen(null);
                 Tier.setChosen(null);
                 break;
+            case 'a':
+            case 'A':
+                for(File f : getImagePaths()) {
+                    if(f.getName().endsWith(".png") || f.getName().endsWith(".jpg") || f.getName().endsWith(".jpeg")) {
+                        Item toAdd = new Item(cleanName(f.getName()), f.getPath(), new float[]{width / 19.2f, width / 19.2f});
+                        items.add(toAdd);
+                        tl[tl.length - 1].addItem(toAdd);
+                    }
+                    f.renameTo(new File("data" + File.separator + f.getName()));
+                }
+                break;
         }
     }
 
@@ -115,24 +122,40 @@ public class TierLister extends PApplet {
         for(Item i : items) {
             if(i.isTouched()) {
                 i.makeChosen();
+                moveChosen();
+                break;
             }
         }
 
         for(Tier t : tl) {
             if(t.isTouched()) {
                 t.makeChosen();
-                if(Tier.getChosen() != null && Item.getChosen() != null) {
-                    if(Item.getChosen().hasTier()) {
-                        Tier prev = Item.getChosen().getTier();
-                        prev.removeItem(Item.getChosen());
-                    }
-                    Tier.getChosen().addItem(Item.getChosen());
-                }
+                moveChosen();
+                break;
             }
         }
     }
 
-    public String cleanName(String name) {
+    private static void moveChosen() {
+        if(Tier.getChosen() != null && Item.getChosen() != null) {
+            if(Item.getChosen().hasTier()) {
+                Tier prev = Item.getChosen().getTier();
+                prev.removeItem(Item.getChosen());
+            }
+            Tier.getChosen().addItem(Item.getChosen());
+            Item.setChosen(null);
+        }
+    }
+
+    private static File[] getImagePaths() {
+        FileDialog fd = new FileDialog(new Frame(), "Item Select", FileDialog.LOAD); //Believe you me, I'd rather use JFileChooser than this...but JFileChooser crashes on me 24/7
+        fd.setVisible(true);
+        fd.setFile("*.jpg;");
+        fd.setMultipleMode(true);
+        return fd.getFiles();
+    }
+
+    private static String cleanName(String name) {
         String[] nameParts = name.split(" ");
         String actualName = "";
         for(int r = 0; r < nameParts.length; r++) {
@@ -147,7 +170,6 @@ public class TierLister extends PApplet {
     public static void main(String[] args) {
         Tier.setGui(app);
         Item.setGui(app);
-
         String[] sketchArgs = {"TierLister"};
         PApplet.runSketch(sketchArgs, app);
     }
