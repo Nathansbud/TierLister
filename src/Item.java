@@ -63,12 +63,15 @@ public class Item {
         } else {
             gui.stroke(255, 0, 0);
         }
-        gui.line(x+width, y, x+1.25f*width, y-0.25f*height);
-        gui.fill(255);
-        gui.rect(x+1.25f*width, y-0.5f*height,1.25f*width, 0.25f*height);
         gui.textSize(12);
+        gui.fill(255);
+        if(gui.textWidth(name) < 1.25f*width) {
+            gui.rect(x + width / 2.0f - 0.625f * width, y - 0.25f * height, 1.25f * width, 0.25f * height);
+        } else {
+            gui.rect(x + width / 2.0f - 0.55f*gui.textWidth(name), y - 0.25f*height, gui.textWidth(name)*1.1f, 0.25f*height);
+        }
         gui.fill(0);
-        gui.text(name, x + 1.25f*width + 0.5f*1.25f*width - 0.5f*gui.textWidth(name), y-0.5f*height+gui.textAscent());
+        gui.text(name, x + width / 2.0f - 0.5f*gui.textWidth(name), y-0.25f*height+gui.textAscent());
     }
 
     public boolean isTouched() {

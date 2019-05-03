@@ -8,9 +8,17 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class TierLister extends PApplet {
+    public enum Preset {
+        NONE(),
+        FRUIT(),
+        USFLAGS()
+    }
+
     private static TierLister app = new TierLister();
-    private static String title = "Fruit Tier List";
-//    private static boolean canShuffle = true;
+
+    private static String title;
+    private static String folder;
+    private static Preset mode; //will be used to set draw mode of things
 
     private static Tier[] tl = {
             new Tier("SS"),
@@ -35,7 +43,7 @@ public class TierLister extends PApplet {
     public void setup() {
         ArrayList<File> files = new ArrayList<>();
 
-        for(File f : new File("data").listFiles()) {
+        for(File f : new File(folder).listFiles()) {
             if(!(f.getName().equals(".DS_Store") || f.getName().equals(".gitkeep"))) {
                 files.add(f);
             }
@@ -45,14 +53,14 @@ public class TierLister extends PApplet {
             tl[i].setCoordinates(0, height/11.5f*(i+1), width/1.5f, height/12.0f);
         }
 
-        tl[tl.length - 1].setCoordinates(width - width/4.8f, 0, width/4.8f, height);
+        tl[tl.length - 1].setCoordinates(width - width/3.2f, 0, width/3.2f, height);
 
         for(int i = 0, n = 0; i < files.size(); i++) {
             if(i % 2 == 0) {
                 n++;
             }
 
-            items.add(new Item(cleanName(files.get(i).getName()), files.get(i).getPath(), new float[]{width/19.2f, width/19.2f}));//, new float[]{width - width/14.4f*(2*((i+1)%2) + (i)%2), height/9.0f*(n), width/19.2f, width/19.2f}));
+            items.add(new Item(cleanName(files.get(i).getName()), files.get(i).getPath(), new float[]{width/19.2f, width/19.2f})); //TD: Rect vs square draw mode
             tl[tl.length - 1].addItem(items.get(i));
         }
 
@@ -111,7 +119,7 @@ public class TierLister extends PApplet {
                         items.add(toAdd);
                         tl[tl.length - 1].addItem(toAdd);
                     }
-                    f.renameTo(new File("data" + File.separator + f.getName()));
+                    f.renameTo(new File(folder + File.separator + f.getName()));
                 }
                 break;
         }
@@ -138,12 +146,14 @@ public class TierLister extends PApplet {
 
     private static void moveChosen() {
         if(Tier.getChosen() != null && Item.getChosen() != null) {
-            if(Item.getChosen().hasTier()) {
-                Tier prev = Item.getChosen().getTier();
-                prev.removeItem(Item.getChosen());
+            if(!Item.getChosen().getTier().equals(Tier.getChosen())) {
+                if (Item.getChosen().hasTier()) {
+                    Tier prev = Item.getChosen().getTier();
+                    prev.removeItem(Item.getChosen());
+                }
+                Tier.getChosen().addItem(Item.getChosen());
+                Item.setChosen(null);
             }
-            Tier.getChosen().addItem(Item.getChosen());
-            Item.setChosen(null);
         }
     }
 
@@ -162,12 +172,31 @@ public class TierLister extends PApplet {
             nameParts[r] = nameParts[r].substring(0, 1).toUpperCase() + nameParts[r].substring(1);
         }
         for(String part : nameParts) {
-            actualName += part;
+            actualName += part+" ";
         }
         return actualName.substring(0, actualName.lastIndexOf("."));
     }
 
+    public static void setPreset(Preset preset) {
+        mode = preset;
+        switch(preset) {
+            case FRUIT:
+                title = "Fruit Tier List";
+                folder = "data" + File.separator + "fruit";
+                break;
+            case USFLAGS:
+                title = "US Flag Tier List";
+                folder = "data" + File.separator + "usflags";
+                break;
+            case NONE:
+                title = "Tier List";
+                folder = "data" + File.separator + "misc";
+                break;
+        }
+    }
+
     public static void main(String[] args) {
+        setPreset(Preset.FRUIT);
         Tier.setGui(app);
         Item.setGui(app);
         String[] sketchArgs = {"TierLister"};

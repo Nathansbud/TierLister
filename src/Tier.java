@@ -106,10 +106,10 @@ public class Tier {
         items.add(item);
         switch(drawDirection) {
             case RIGHT:
-                item.setPosition(x+width/10.0f+(gui.width/19.2f*(items.size()-1)), y); //TD: Need to handle overflow from tier
+                item.setPosition(x+width/10.0f+(item.getWidth()*(items.size()-1)), y); //TD: Need to handle overflow from tier
                 break;
             case DOWN:
-                item.setPosition(x + gui.width/14.4f*((items.size()-1)%3), boxY+boxHeight+gui.width/14.4f*(((items.size()-1)/3)));
+                item.setPosition(x + item.getWidth()*1.25f*((items.size()-1)%5), boxY+boxHeight+item.getHeight()*1.25f*(((items.size()-1)/5)));
                 break;
         }
         item.setTier(this);
@@ -124,10 +124,10 @@ public class Tier {
         for(int i = 0; i < items.size(); i++) {
             switch(drawDirection) {
                 case RIGHT:
-                    items.get(i).setPosition(x + width/10.0f+gui.width/19.2f*(i), y);
+                    items.get(i).setPosition(x + width/10.0f+items.get(i).getWidth()*(i), y);
                     break;
                 case DOWN:
-                    items.get(i).setPosition(x + gui.width/14.4f*((i)%3), boxY+boxHeight+gui.width/14.4f*(i/3));
+                    items.get(i).setPosition(x + items.get(i).getWidth()*1.25f*((i)%5), boxY+boxHeight+items.get(i).getHeight()*1.25f*(i/5));
                     break;
             }
         }
